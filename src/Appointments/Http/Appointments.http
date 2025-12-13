@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {
   "clientName": "John Doe",
-  "appointmentTime": "2026-03-20T10:30:00Z",
+  "appointmentTime": "2126-03-20T10:30:00Z",
   "serviceDurationMinutes": 60
 }
 
