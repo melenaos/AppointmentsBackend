@@ -8,4 +8,35 @@ GET {{Appointments_HostAddress}}/appointments/1
 Accept: application/json
 
 
-###
+### Create => Successfully add a new appointment
+
+POST {{Appointments_HostAddress}}/appointments/Ingest
+Content-Type: application/json
+
+{
+  "clientName": "John Doe",
+  "appointmentTime": "2026-03-20T10:30:00Z",
+  "serviceDurationMinutes": 60
+}
+
+### Create => One validation error
+
+POST {{Appointments_HostAddress}}/appointments/Ingest
+Content-Type: application/json
+
+{
+  "clientName": "John Doe",
+  "appointmentTime": "2025-03-20T10:30:00Z",
+  "serviceDurationMinutes": 60
+}
+
+### Create => Multiple validation errors
+
+POST {{Appointments_HostAddress}}/appointments/Ingest
+Content-Type: application/json
+
+{
+  "clientName": "",
+  "appointmentTime": "2025-03-20T10:30:00Z",
+  "serviceDurationMinutes": -10
+}

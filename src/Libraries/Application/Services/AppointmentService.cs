@@ -1,5 +1,8 @@
-﻿using Appointments.Application.Dtos;
+﻿using Appointments.Application.Common;
+using Appointments.Application.Dtos;
+using Appointments.Application.Results;
 using Appointments.Application.Services.Abstructions;
+using Appointments.Dal.Entities;
 using Appointments.Dal.Repositories.Abstructions;
 using System;
 using System.Collections.Generic;
@@ -17,19 +20,54 @@ namespace Appointments.Application.Services
             _appointmentRepository = appointmentRepository;
         }
 
-        public Task<AppointmentDto> Create(AppointmentDto appointment)
+        public async Task<Result<AppointmentDto>> Create(AppointmentDto appointment)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(appointment);
+
+            // Validate input
+            var errors = new List<ValidationError>();
+
+            if (string.IsNullOrEmpty(appointment.ClientName))
+                errors.Add(new("AppointmentCreate.ClientName.Missing", "The client name is required."));
+
+            if (appointment.AppointmentTime < DateTime.UtcNow.AddMinutes(5))
+                errors.Add(new("AppointmentCreate.AppointmentTime.Past", "Appointment time must be in the future."));
+
+            if (appointment.ServiceDurationMinutes.HasValue && appointment.ServiceDurationMinutes <= 0)
+                errors.Add(new("AppointmentCreate.Duration.Invalid", "Duration must be greater than zero"));
+
+            // Overlapping is allowed?
+            // if (await _appointmentRepository.HasOverlap(appointment.AppointmentTime, appointment.ServiceDurationMinutes))
+            //    errors.Add(new("AppointmentCreate.AppointmentTime.Overlap", "Overlapping appointment exists"));
+
+            if (errors.Any())
+                return Result<AppointmentDto>.Failure(errors.ToArray());
+
+            // assume a default of 30 if missing. [Requirement]
+            if (!appointment.ServiceDurationMinutes.HasValue) appointment.ServiceDurationMinutes = 30;
+
+            // Store appointment
+            Appointment entity = appointment.GetEntity();
+            entity = await _appointmentRepository.CreateNew(entity);
+
+            return Result<AppointmentDto>.Success(new AppointmentDto(entity));
         }
 
-        public Task<IEnumerable<AppointmentDto>> GetAll()
+        public async Task<IEnumerable<AppointmentDto>> GetAll()
         {
-            throw new NotImplementedException();
+            var appointments = await _appointmentRepository.GetAll();
+
+            return appointments.Select(a => new AppointmentDto(a));
         }
 
-        public Task<AppointmentDto> GetById(long id)
+        public async Task<AppointmentDto?> GetById(long id)
         {
-            throw new NotImplementedException();
+            var appointment = await _appointmentRepository.Get(id);
+
+            if (appointment != null)
+                return new AppointmentDto(appointment);
+            else
+                return null;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Appointments.Dal.Repositories
             // foreach won't break if the collection changes (ConcurrentDictionary)
             foreach (var kvp in _appointments)
             {
-                if (kvp.Value.ApointmentTime < deleteBefore &&
+                if (kvp.Value.AppointmentTime < deleteBefore &&
                     _appointments.TryRemove(kvp.Key, out _))
                 {
                     removed++;

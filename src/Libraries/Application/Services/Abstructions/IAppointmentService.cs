@@ -1,4 +1,5 @@
 ﻿using Appointments.Application.Dtos;
+using Appointments.Application.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Appointments.Application.Services.Abstructions
     public interface IAppointmentService
     {
         Task<IEnumerable<AppointmentDto>> GetAll();
-        Task<AppointmentDto> GetById(long id);
-        Task<AppointmentDto> Create(AppointmentDto appointment);
+        Task<AppointmentDto?> GetById(long id);
+        Task<Result<AppointmentDto>> Create(AppointmentDto appointment);
     }
 }

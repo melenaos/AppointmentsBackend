@@ -1,5 +1,4 @@
 using Appointments.Application.Dtos;
-using Appointments.Application.Services;
 using Appointments.Application.Services.Abstructions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,17 +31,25 @@ namespace Appointments.Controllers
         }
 
 
-        [HttpPost(Name = "Ingest")]
+        [HttpPost("Ingest")]
         public async Task<ActionResult<AppointmentDto>> CreateNewAppointment(AppointmentDto request)
         {
-            // Need to validate
-            var appointment = await _appointmentService.Create(request);
+            var result = await _appointmentService.Create(request);
+
+            if (!result.IsSuccess)
+                return BadRequest(new
+                {
+                    errors = result.Errors.Select(e => new
+                    {
+                        e.Code,
+                        e.Message
+                    })
+                });
 
             return CreatedAtAction(
                 nameof(GetAppointmentById),
-                new { id = appointment.Id },
-                appointment
-            );
+                new { id = result.Value!.Id },
+                result.Value);
         }
 
 

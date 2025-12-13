@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Libraries\Application\Application.csproj" />
     <ProjectReference Include="..\Libraries\Dal\Dal.csproj" />
+    <ProjectReference Include="..\Libraries\DiConfig\DiConfig.csproj" />
   </ItemGroup>
 
 </Project>

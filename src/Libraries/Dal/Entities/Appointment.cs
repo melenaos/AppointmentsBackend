@@ -13,7 +13,7 @@ namespace Appointments.Dal.Entities
     {
         public long? Id { get; set; }
         public required string ClientName { get; set; }
-        public DateTime ApointmentTime { get; set; }
+        public DateTime AppointmentTime { get; set; }
         public int ServiceDurationMinutes { get; set; }
     }
 }
