@@ -13,13 +13,131 @@ namespace Application.Tests.Services
 {
     public class AppointmentServiceTests
     {
-        
+        public class GetAll : AppointmentServiceTests
+        {
+            [Fact]
+            public async Task ReturnsMappedAppointmentDtos()
+            {
+                // Arrange
+                var appointments = new List<Appointment>
+                    {
+                        new Appointment
+                        {
+                            Id = 1,
+                            ClientName = "John",
+                            AppointmentTime = DateTime.UtcNow.AddDays(1),
+                            ServiceDurationMinutes = 30
+                        },
+                        new Appointment
+                        {
+                            Id = 2,
+                            ClientName = "Jane",
+                            AppointmentTime = DateTime.UtcNow.AddDays(2),
+                            ServiceDurationMinutes = 60
+                        }
+                    };
+
+                var appointmentRepository = new Mock<IAppointmentRepository>();
+                appointmentRepository
+                    .Setup(r => r.GetAll())
+                    .ReturnsAsync(appointments);
+
+                var service = ProvideAppointmentService(
+                    appointmentRepository: appointmentRepository.Object);
+
+                // Act
+                var result = await service.GetAll();
+
+                // Assert
+                var resultList = result.ToList();
+
+                Assert.Equal(2, resultList.Count);
+
+                Assert.Equal(1, resultList[0].Id);
+                Assert.Equal("John", resultList[0].ClientName);
+                Assert.Equal(30, resultList[0].ServiceDurationMinutes);
+
+                Assert.Equal(2, resultList[1].Id);
+                Assert.Equal("Jane", resultList[1].ClientName);
+                Assert.Equal(60, resultList[1].ServiceDurationMinutes);
+            }
+
+            [Fact]
+            public async Task WhenNoAppointments_ReturnsEmptyCollection()
+            {
+                var appointmentRepository = new Mock<IAppointmentRepository>();
+                appointmentRepository
+                    .Setup(r => r.GetAll())
+                    .ReturnsAsync(Enumerable.Empty<Appointment>());
+
+                var service = ProvideAppointmentService(
+                    appointmentRepository: appointmentRepository.Object);
+
+                var result = await service.GetAll();
+
+                Assert.NotNull(result);
+                Assert.Empty(result);
+            }
+        }
+
+        public class GetById: AppointmentServiceTests
+        {
+            [Fact]
+            public async Task WhenAppointmentExists_ReturnsAppointmentDto()
+            {
+                // Arrange
+                var appointment = new Appointment
+                {
+                    Id = 5,
+                    ClientName = "John",
+                    AppointmentTime = DateTime.UtcNow.AddDays(1),
+                    ServiceDurationMinutes = 30
+                };
+
+                var appointmentRepository = new Mock<IAppointmentRepository>();
+                appointmentRepository
+                    .Setup(r => r.Get(5))
+                    .ReturnsAsync(appointment);
+
+                var service = ProvideAppointmentService(
+                    appointmentRepository: appointmentRepository.Object);
+
+                // Act
+                var result = await service.GetById(5);
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal(5, result!.Id);
+                Assert.Equal("John", result.ClientName);
+                Assert.Equal(30, result.ServiceDurationMinutes);
+            }
+
+            [Fact]
+            public async Task WhenAppointmentDoesNotExist_ReturnsNull()
+            {
+                // Arrange
+                var appointmentRepository = new Mock<IAppointmentRepository>();
+                appointmentRepository
+                    .Setup(r => r.Get(It.IsAny<long>()))
+                    .ReturnsAsync((Appointment?)null);
+
+                var service = ProvideAppointmentService(
+                    appointmentRepository: appointmentRepository.Object);
+
+                // Act
+                var result = await service.GetById(42);
+
+                // Assert
+                Assert.Null(result);
+            }
+        }
+
         public class Create : AppointmentServiceTests
         {
             [Fact]
             public async Task NullAppointment_ThrowsArgumentNullException()
             {
-               var service = ProvideAppointmentService();
+                var service = ProvideAppointmentService();
 
                 await Assert.ThrowsAsync<ArgumentNullException>(() =>
                     service.Create(null!)
@@ -30,7 +148,7 @@ namespace Application.Tests.Services
             public async Task MissingClientName_ReturnsValidationError()
             {
                 var service = ProvideAppointmentService();
-              
+
                 var dto = new AppointmentDto
                 {
                     ClientName = "",
@@ -66,29 +184,50 @@ namespace Application.Tests.Services
                     !string.IsNullOrWhiteSpace(e.Message));
             }
 
-            [Fact]
-            public async Task InvalidDuration_ReturnsValidationError()
+            [Theory]
+            [InlineData(15, 0, 0)]   // invalid minute
+            [InlineData(45, 0, 0)]   // invalid minute
+            [InlineData(0, 5, 0)]    // invalid seconds
+            [InlineData(30, 10, 0)]  // invalid seconds
+            [InlineData(0, 0, 5)]    // invalid milliseconds
+            [InlineData(30, 0, 250)] // invalid milliseconds
+            [InlineData(15, 5, 10)]  // everything invalid
+            public async Task InvalidTimeAlignment_ReturnsValidationError(
+                int minutes,
+                int seconds,
+                int milliseconds)
             {
+                // Arrange
                 var appointmentRepository = new Mock<IAppointmentRepository>();
-                var service = ProvideAppointmentService(appointmentRepository: appointmentRepository.Object);
+                var service = ProvideAppointmentService(
+                    appointmentRepository: appointmentRepository.Object);
 
                 appointmentRepository
                     .Setup(r => r.CreateNew(It.IsAny<Appointment>()))
                     .ReturnsAsync((Appointment a) => a);
 
+                var baseTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10);
+
                 var dto = new AppointmentDto
                 {
                     ClientName = "John",
-                    AppointmentTime = DateTime.UtcNow.Date.AddDays(1).AddHours(5).AddMinutes(15), // e.g. 1/1/26 1:15:00
+                    AppointmentTime = baseTime
+                        .AddMinutes(minutes)
+                        .AddSeconds(seconds)
+                        .AddMilliseconds(milliseconds)
                 };
 
+                // Act
                 var result = await service.Create(dto);
 
+                // Assert
                 Assert.False(result.IsSuccess);
                 Assert.Contains(result.Errors, e =>
                     e.Code == "AppointmentCreate.AppointmentTime.Alignment" &&
                     !string.IsNullOrWhiteSpace(e.Message));
             }
+
+
 
             [Theory]
             [InlineData(0)]
@@ -105,7 +244,7 @@ namespace Application.Tests.Services
                 var dto = new AppointmentDto
                 {
                     ClientName = "John",
-                    AppointmentTime = DateTime.UtcNow.Date.AddHours(10).AddMinutes(minutes),
+                    AppointmentTime = DateTime.UtcNow.Date.AddDays(1).AddHours(10).AddMinutes(minutes),
                     ServiceDurationMinutes = 30
                 };
 
@@ -158,7 +297,7 @@ namespace Application.Tests.Services
             {
                 var appointmentRepository = new Mock<IAppointmentRepository>();
                 var service = ProvideAppointmentService(appointmentRepository: appointmentRepository.Object);
-              
+
                 Appointment? savedEntity = null;
 
                 appointmentRepository

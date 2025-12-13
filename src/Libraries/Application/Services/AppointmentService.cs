@@ -33,6 +33,10 @@ namespace Appointments.Application.Services
             if (appointment.AppointmentTime < DateTime.UtcNow.AddMinutes(5))
                 errors.Add(new("AppointmentCreate.AppointmentTime.Past", "Appointment time must be in the future."));
 
+            if ((appointment.AppointmentTime.Minute != 30 && appointment.AppointmentTime.Minute != 0 )||
+                appointment.AppointmentTime.Second != 0 || appointment.AppointmentTime.Millisecond != 0)
+                errors.Add(new("AppointmentCreate.AppointmentTime.Alignment", "Appointment time must start on the hour or half-hour."));
+
             if (appointment.ServiceDurationMinutes.HasValue && appointment.ServiceDurationMinutes <= 0)
                 errors.Add(new("AppointmentCreate.Duration.Invalid", "Duration must be greater than zero"));
 
