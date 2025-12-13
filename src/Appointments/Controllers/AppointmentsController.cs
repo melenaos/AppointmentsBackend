@@ -1,3 +1,4 @@
+using Appointments.Api.ViewModels;
 using Appointments.Application.Common;
 using Appointments.Application.Dtos;
 using Appointments.Application.Services.Abstructions;
@@ -73,10 +74,15 @@ namespace Appointments.Controllers
                     })
                 });
 
+            var response = new AppointmentCreatedResponse(
+                result.Value!.Id!.Value,
+                "Appointment created successfully."
+            );
+
             return CreatedAtAction(
                 nameof(GetAppointmentById),
-                new { id = result.Value!.Id },
-                result.Value);
+                new { id = response.Id },
+                response);
         }
 
 
