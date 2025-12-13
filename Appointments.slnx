@@ -1,5 +1,9 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Appointments/Appointments.csproj" />
+    <Project Path="src/Appointments/Appointments.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/libraries/">
+    <Project Path="src/Libraries/Application/Application.csproj" />
+    <Project Path="src/Libraries/Dal/Dal.csproj" Id="874a04fb-1ecf-476d-9a1f-3d70fe3e12bc" />
   </Folder>
 </Solution>

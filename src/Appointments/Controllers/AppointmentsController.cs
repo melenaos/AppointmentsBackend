@@ -1,3 +1,6 @@
+using Appointments.Application.Dtos;
+using Appointments.Application.Services;
+using Appointments.Application.Services.Abstructions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Appointments.Controllers
@@ -6,39 +9,39 @@ namespace Appointments.Controllers
     [Route("[controller]")]
     public class AppointmentsController : ControllerBase
     {
+        private readonly IAppointmentService _appointmentService;
         private readonly ILogger<AppointmentsController> _logger;
 
-        public AppointmentsController(ILogger<AppointmentsController> logger)
+        public AppointmentsController(
+            IAppointmentService appointmentService,
+            ILogger<AppointmentsController> logger)
         {
+            _appointmentService = appointmentService;
             _logger = logger;
         }
 
         [HttpGet("{id:long}")]
         public async Task<ActionResult<AppointmentDto>> GetAppointmentById(long id)
         {
-            var appointment = _appointmentsService.GetById(id);
+            var appointment = _appointmentService.GetById(id);
 
             if (appointment == null)
                 return NotFound();
 
-            var dto = new AppointmentDto(appointment);
-
-            return Ok(dto);
+            return Ok(appointment);
         }
 
 
         [HttpPost(Name = "Ingest")]
-        public async Task<ActionResult<AppointmentDto>> CreateNewAppointment()
+        public async Task<ActionResult<AppointmentDto>> CreateNewAppointment(AppointmentDto request)
         {
-            throw new Exception("Validate first!");
-            var appointment = await _appointmentService.CreateAsync(request);
-
-            var dto = new AppointmentDto(appointment);
+            // Need to validate
+            var appointment = await _appointmentService.Create(request);
 
             return CreatedAtAction(
                 nameof(GetAppointmentById),
                 new { id = appointment.Id },
-                dto
+                appointment
             );
         }
 
@@ -46,11 +49,9 @@ namespace Appointments.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<AppointmentDto>> GetAppointments()
         {
-            var appointments = _appointmentsService.GetAll();
+            var appointments = _appointmentService.GetAll();
 
-            var dtos = appointments.Select(a => new AppointmentDto(a));
-
-            return Ok(dtos);
+            return Ok(appointments);
         }
     }
 }
