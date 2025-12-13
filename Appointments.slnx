@@ -7,4 +7,7 @@
     <Project Path="src/Libraries/Dal/Dal.csproj" />
     <Project Path="src/Libraries/DiConfig/DiConfig.csproj" />
   </Folder>
+  <Folder Name="/src/Tests/">
+    <Project Path="src/Tests/Application.Tests/Application.Tests.csproj" Id="47e06de6-121b-43ab-9a94-f199d596622d" />
+  </Folder>
 </Solution>
