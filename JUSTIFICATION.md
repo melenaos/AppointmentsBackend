@@ -68,6 +68,50 @@ DTO is lighter by not including irrelevant domain data.
 They can evolve seperately without having to propage the changes to the oposite layer.
 We can apply versioning to the DTOs without breaking existing consumers.
 
+### Why there are two seperate repositories for backend and frontend?
+Frontend and backedn should stay independent because they usually evolve at a different speed.
+we might see frontend iterate really fast while we need the backend to remain stable.
+Different team don't want to step on each other. Independent deployment, see the next section.
+Different tooling, CI pipelines won't have to deal with differnt technologies.
+Team boundaries, backend team owns the API and frontent team owns the UI.
+Better and faster code review, less merge conflicts.
+
+### Independent Deployment for backend and frontend
+As I have suspected you are most likelly want to bundle everything into one docker image.
+But, I don't think this is the right choice with such project.
+
+Using separate deployments for backend and frontend is a cloud-native design choice that optimizes scalability, cost, security, and operational simplicity.
+
+Backend has long running processes, requires CPU,Memory, and Storage for been stateful.
+While frontend has prebuild static files, usually served over CDN wihtout needing any server runtime.
+
+With seperate hosting you are paying only for backend computing, frontend is almost free since it's served through CND.
+
+When the traffic hits, the scalling is completely different for frontend and backend.
+If we serve the fronent from a docker image, we have to scale out to handle increased traffic while the backend might not need it.
+
+Independent deployment can keep the server running while the frontend is updating a minor ui fix.
+and the server updates doesn't invalidate the frontend caching.
+
+Azure is build exactly for this setup, the App Services resource is packed with free tooling.
+- Zero infrastructure management
+  - no vm, no OS maintencance, no container orhestration required
+  - slot-based deplyments
+- Build-in observability
+  - Application insights
+  - Live log streaming
+  - Metrics alerts, dashboards
+  - Distributed tracing
+- Security
+  - Https enforced
+  - Managed identity
+  - Key vault
+  - Managed Configuration
+
+Azure App Service is purpose-built for hosting APIs and provides extensive built-in tooling for deployment, monitoring, security, and scaling.
+
+By deploying the backend as an App Service and the frontend as a Static Web App, the system leverages Azure’s strengths instead of recreating platform features inside a Docker image.
+
 ## Testing Philosophy
 We prioterize Unit test over integration tests
 ### Unit tests
