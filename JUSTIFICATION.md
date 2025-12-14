@@ -82,9 +82,6 @@ Team boundaries, backend team owns the API and frontent team owns the UI.
 Better and faster code review, less merge conflicts.
 
 ### Independent Deployment for backend and frontend
-As I have suspected you are most likelly want to bundle everything into one docker image.
-But, I don't think this is the right choice with such project.
-
 Using separate deployments for backend and frontend is a cloud-native design choice that optimizes scalability, cost, security, and operational simplicity.
 
 Backend has long running processes, requires CPU,Memory, and Storage for been stateful.
@@ -101,7 +98,7 @@ and the server updates doesn't invalidate the frontend caching.
 Azure is build exactly for this setup, the App Services resource is packed with free tooling.
 - Zero infrastructure management
   - no vm, no OS maintencance, no container orhestration required
-  - slot-based deplyments
+  - slot-based deployments
 - Build-in observability
   - Application insights
   - Live log streaming
@@ -110,8 +107,7 @@ Azure is build exactly for this setup, the App Services resource is packed with 
 - Security
   - Https enforced
   - Managed identity
-  - Key vault
-  - Managed Configuration
+  - Key vault and Managed Configuration
 
 Azure App Service is purpose-built for hosting APIs and provides extensive built-in tooling for deployment, monitoring, security, and scaling.
 
