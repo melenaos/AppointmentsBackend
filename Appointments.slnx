@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Documentation/">
+    <File Path="JUSTIFICATION.md" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Appointments/Appointments.Api.csproj" />
   </Folder>
