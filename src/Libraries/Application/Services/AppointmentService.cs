@@ -4,6 +4,7 @@ using Appointments.Application.Results;
 using Appointments.Application.Services.Abstructions;
 using Appointments.Dal.Entities;
 using Appointments.Dal.Repositories.Abstructions;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,13 @@ namespace Appointments.Application.Services
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository _appointmentRepository;
-        public AppointmentService(IAppointmentRepository appointmentRepository)
+        ILogger<AppointmentService> _logger;
+        public AppointmentService(
+            IAppointmentRepository appointmentRepository, 
+            ILogger<AppointmentService> logger)
         {
             _appointmentRepository = appointmentRepository;
+            _logger = logger;
         }
 
         public async Task<Result<AppointmentDto>> Create(AppointmentDto appointment)
@@ -53,6 +58,8 @@ namespace Appointments.Application.Services
             // Store appointment
             Appointment entity = appointment.GetEntity();
             entity = await _appointmentRepository.CreateNew(entity);
+
+            _logger.LogInformation("New appointment have beed created. Id: {AppointmentId}", entity.Id);
 
             return Result<AppointmentDto>.Success(new AppointmentDto(entity));
         }
