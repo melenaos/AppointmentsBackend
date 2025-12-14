@@ -10,6 +10,7 @@ Controllers -> Services -> Repositories
 - Handle Http requests
 - Call application services
 - Does not contain any business logic
+- Must not reference DAL directly
 
 #### Services (Applicatoin Layer)
 - Contain business rules and validations
@@ -19,6 +20,8 @@ Controllers -> Services -> Repositories
 
 ### Repositories (Data Access layer)
 - Data storage and retrieval
+- Must not use DTOs
+- No buisiness logic here
 
 ### Design principles
 - Seperation of concerns
@@ -67,6 +70,8 @@ DTO is lighter by not including irrelevant domain data.
 
 They can evolve seperately without having to propage the changes to the oposite layer.
 We can apply versioning to the DTOs without breaking existing consumers.
+
+Unfortunately there is mapping overhead, but it's a small sacrifice for having all the above advantages.
 
 ### Why there are two seperate repositories for backend and frontend?
 Frontend and backedn should stay independent because they usually evolve at a different speed.
@@ -125,11 +130,13 @@ Maybe the biggest gain from attending the unit test approach is that if forces w
 The unit testing needs a strong seperation of concerns, DI, thin controllers.
 
 They are great to use in an automation action before commiting, mergin or releasing a new version.
+We don't test DTO mapping, framework code, actual Service call and DB access.
 
 ### Integration testing
 This is a valuable testing way to validate that the system works.
 They verify end-to-end flows, while unit test validates each component works correctly, 
 integration tests validate that these components have been correctly wired together.
+
 
 ## Trade-offs and Omissions
  
