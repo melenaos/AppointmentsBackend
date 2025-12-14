@@ -4,7 +4,6 @@
 The application follows a layered architecture with clear separation of concerns.
 
 ### Layers
-
 Controllers -> Services -> Repositories
 
 #### Controllers (API Layer)
@@ -50,7 +49,7 @@ Controllers -> Services -> Repositories
  |  |- Application.Tests
 
  All libraries must contain Models, Interfaces, Concreate classes for their functionality.
- The Interfaces are in a `Abstructions` folder.
+ The Interfaces are in a `Abstructions` folder. 
  Each Libary is responsible to provide their DI config in a `static IServiceCollection Add...(this IServiceCollection services)` procedure.
 
 
@@ -91,5 +90,84 @@ Controllers -> Services -> Repositories
  ## Trade-offs and Omissions
  
  ### Logging
- I should have setup Serilog for log piping and implement unhandle exception logging.
- The most import part of monitoring in th Azure ecosystme is Azure Insights.
+ I should have setup Serilog for log piping.
+
+ ### Authentication
+ No authentication/authorization is implemented.
+
+ ### Data Persistance
+ A Real database is missing, but the infrastructure is already there. 
+ Implement the file `/Libraries/Dal/Repositories/AppointmentsRepositor.cs` with actual db implementation 
+ and update the Dal's DependencyInjection to use the real implementation.
+
+ ### Localization
+ The validation messages are not localized.
+
+ ### Metrics
+ Imlement Application Insights to gather metrics about the application health.
+
+ ### Integration testing
+ While unit-tests are ok, we need also some integration testing.
+
+ ### Rate limiting, abuse pervation
+ If this is a pulbic tool, we might want to apply some rate limiting to avoid abuse.
+
+ ### CI/CD 
+
+ ## Deployment
+ For this project I wouldn't use containers. I propose to deploy it at Azure App Services.
+ 
+- create a new App Service. Note the [app name] and download the publishing profile of the staging slot.
+- Add the following action at the project's github workflows folder.
+- Add a new secret at the github repository named AZURE_WEBAPP_PUBLISH_PROFILE  with the publishing project.
+
+
+```
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build
+
+      - name: Publish
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          slot-name: staging
+          app-name: [app name]
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
+
+
+```
+
+### Requriments
+Directly commiting to the main branch should be forbidden and applied with authorization restriction.
+Every feature should be implemented using branches and merged to a Version branch.
+Only when the Version is ready we can merge it to main. That will trigger publishing to the stage environment.
+When Staging is tested, we can switch the staging to production.
