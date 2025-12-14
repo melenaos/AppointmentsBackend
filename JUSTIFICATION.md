@@ -29,93 +29,93 @@ Controllers -> Services -> Repositories
 ### Libraly and Folder structure
 
 [src]
- |- Appointments.Api
- |  |- Controllers
- |  |- ViewModels (used only in the Controllers for responses)
- |  |- Http (Contains logically grouped test requests | Smoke tests)
- |
- |- [Libraries]
- |  |- Dal
- |  |  |- Entities (The Data Storage Entities, must match the database)
- |  |  |- Repositories (each different Entity must have it's own repo)
- |  |
- |  |- Application
- |  |  |- Dtos
- |  |  |- Services (seperate the business requirements by locical groups, not by db tables)
- |  |
- |  |- DiConfig (Gathers the DI configuration from all the libraries)
- |
- |- [Tests]
- |  |- Application.Tests
+|- Appointments.Api
+|  |- Controllers
+|  |- ViewModels (used only in the Controllers for responses)
+|  |- Http (Contains logically grouped test requests | Smoke tests)
+|
+|- [Libraries]
+|  |- Dal
+|  |  |- Entities (The Data Storage Entities, must match the database)
+|  |  |- Repositories (each different Entity must have it's own repo)
+|  |
+|  |- Application
+|  |  |- Dtos
+|  |  |- Services (seperate the business requirements by locical groups, not by db tables)
+|  |
+|  |- DiConfig (Gathers the DI configuration from all the libraries)
+|
+|- [Tests]
+|  |- Application.Tests
 
- All libraries must contain Models, Interfaces, Concreate classes for their functionality.
- The Interfaces are in a `Abstructions` folder. 
- Each Libary is responsible to provide their DI config in a `static IServiceCollection Add...(this IServiceCollection services)` procedure.
+All libraries must contain Models, Interfaces, Concreate classes for their functionality.
+The Interfaces are in a `Abstructions` folder. 
+Each Libary is responsible to provide their DI config in a `static IServiceCollection Add...(this IServiceCollection services)` procedure.
 
 
- ## Design Choices
+## Design Choices
 
- ### Why seperate API and Domain models?
- The application intentionally separates API models (DTOs) from domain models.  
- This is a deliberate design choice to improve long-term maintainability and flexibility.
+### Why seperate API and Domain models?
+The application intentionally separates API models (DTOs) from domain models.  
+This is a deliberate design choice to improve long-term maintainability and flexibility.
 
- API contracts might contain more information that the domain model needs.
- UI specific data or user configurable format (local datetime), versioning, UX information, etc
+API contracts might contain more information that the domain model needs.
+UI specific data or user configurable format (local datetime), versioning, UX information, etc
 
- Domain might contain sensitive data that we don't want to expose to the UI.
- DTO is lighter by not including irrelevant domain data.
+Domain might contain sensitive data that we don't want to expose to the UI.
+DTO is lighter by not including irrelevant domain data.
 
- They can evolve seperately without having to propage the changes to the oposite layer.
- We can apply versioning to the DTOs without breaking existing consumers.
+They can evolve seperately without having to propage the changes to the oposite layer.
+We can apply versioning to the DTOs without breaking existing consumers.
 
- ## Testing Philosophy
- We prioterize Unit test over integration tests
- ### Unit tests
- Unit tests can execute fast and frequent without the need to bring the system to a running state.
- There is no need to have networks, http requests, time heavy executions or warm ups.
+## Testing Philosophy
+We prioterize Unit test over integration tests
+### Unit tests
+Unit tests can execute fast and frequent without the need to bring the system to a running state.
+There is no need to have networks, http requests, time heavy executions or warm ups.
  
- We can use them to create a test first coding aproach, and isolate the business logic and test throughfully.
- When a unit test fails it points exactly to the problematic location and it's easy and fast to debug using breakpoints.
+We can use them to create a test first coding aproach, and isolate the business logic and test throughfully.
+When a unit test fails it points exactly to the problematic location and it's easy and fast to debug using breakpoints.
 
- Maybe the biggest gain from attending the unit test approach is that if forces writting better code:
- The unit testing needs a strong seperation of concerns, DI, thin controllers.
+Maybe the biggest gain from attending the unit test approach is that if forces writting better code:
+The unit testing needs a strong seperation of concerns, DI, thin controllers.
 
- They are great to use in an automation action before commiting, mergin or releasing a new version.
+They are great to use in an automation action before commiting, mergin or releasing a new version.
 
- ### Integration testing
- This is a valuable testing way to validate that the system works.
- They verify end-to-end flows, while unit test validates each component works correctly, 
- integration tests validate that these components have been correctly wired together.
+### Integration testing
+This is a valuable testing way to validate that the system works.
+They verify end-to-end flows, while unit test validates each component works correctly, 
+integration tests validate that these components have been correctly wired together.
 
- ## Trade-offs and Omissions
+## Trade-offs and Omissions
  
- ### Logging
- I should have setup Serilog for log piping.
+### Logging
+I should have setup Serilog for log piping.
 
- ### Authentication
- No authentication/authorization is implemented.
+### Authentication
+No authentication/authorization is implemented.
 
- ### Data Persistance
- A Real database is missing, but the infrastructure is already there. 
- Implement the file `/Libraries/Dal/Repositories/AppointmentsRepositor.cs` with actual db implementation 
- and update the Dal's DependencyInjection to use the real implementation.
+### Data Persistance
+A Real database is missing, but the infrastructure is already there. 
+Implement the file `/Libraries/Dal/Repositories/AppointmentsRepositor.cs` with actual db implementation 
+and update the Dal's DependencyInjection to use the real implementation.
 
- ### Localization
- The validation messages are not localized.
+### Localization
+The validation messages are not localized.
 
- ### Metrics
- Imlement Application Insights to gather metrics about the application health.
+### Metrics
+Imlement Application Insights to gather metrics about the application health.
 
- ### Integration testing
- While unit-tests are ok, we need also some integration testing.
+### Integration testing
+While unit-tests are ok, we need also some integration testing.
 
- ### Rate limiting, abuse pervation
- If this is a pulbic tool, we might want to apply some rate limiting to avoid abuse.
+### Rate limiting, abuse pervation
+If this is a pulbic tool, we might want to apply some rate limiting to avoid abuse.
 
- ### CI/CD 
+### CI/CD 
 
- ## Deployment
- For this project I wouldn't use containers. I propose to deploy it at Azure App Services.
+## Deployment
+For this project I wouldn't use containers. I propose to deploy it at Azure App Services.
  
 - create a new App Service. Note the [app name] and download the publishing profile of the staging slot.
 - Add the following action at the project's github workflows folder.
