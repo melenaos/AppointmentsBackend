@@ -135,7 +135,15 @@ integration tests validate that these components have been correctly wired toget
 
 
 ## Trade-offs and Omissions
+
+### specific DTOs for api actions
+We should use specific DTOs for api calls, even if they _look_ like the dtos we already have.
+For example we need an CreateAppointmentDto to create the appointment that doesn't have id and the duration is nullable.
+Since we set the duration to 30 minutes, the dto that goes to db it shouldn't be nullable.
  
+### Pagination and filters
+The appointment list must have pagination and filters
+
 ### Logging
 I should have setup Serilog for log piping.
 

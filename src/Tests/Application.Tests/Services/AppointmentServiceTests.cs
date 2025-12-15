@@ -2,6 +2,7 @@
 using Appointments.Application.Services;
 using Appointments.Dal.Entities;
 using Appointments.Dal.Repositories.Abstructions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -80,7 +81,7 @@ namespace Application.Tests.Services
             }
         }
 
-        public class GetById: AppointmentServiceTests
+        public class GetById : AppointmentServiceTests
         {
             [Fact]
             public async Task WhenAppointmentExists_ReturnsAppointmentDto()
@@ -348,11 +349,14 @@ namespace Application.Tests.Services
         }
 
 
-        protected AppointmentService ProvideAppointmentService(IAppointmentRepository? appointmentRepository = null)
+        protected AppointmentService ProvideAppointmentService(
+            IAppointmentRepository? appointmentRepository = null,
+            ILogger<AppointmentService> logger = null)
         {
             appointmentRepository = appointmentRepository ?? new Mock<IAppointmentRepository>().Object;
+            logger = logger ?? new Mock<ILogger<AppointmentService>>().Object;
 
-            return new AppointmentService(appointmentRepository);
+            return new AppointmentService(appointmentRepository, logger);
         }
     }
 }

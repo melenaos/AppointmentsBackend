@@ -3,6 +3,7 @@ using Appointments.Application.Common;
 using Appointments.Application.Dtos;
 using Appointments.Application.Services.Abstructions;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Appointments.Controllers
 {
@@ -95,9 +96,9 @@ namespace Appointments.Controllers
         /// <response code="200">The list of appointments was retrieved successfully.</response>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AppointmentDto>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<AppointmentDto>> GetAppointments()
+        public async Task<ActionResult<IEnumerable<AppointmentDto>>> GetAppointments()
         {
-            var appointments = _appointmentService.GetAll();
+            var appointments = await _appointmentService.GetAll();
 
             return Ok(appointments);
         }

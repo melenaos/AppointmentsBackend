@@ -5,7 +5,7 @@ Minimal .NET 8 Web API for managing appointments.
 UI Repo: https://github.com/melenaos/AppointmentsUi
 
 ## Time tracking
-Backend+Testing: 3h | Frontend: 1h | Documentation: 1.5h
+Backend+Testing: 3h | Frontend: 4h | Documentation: 1.5h
 
 ## Deployment
 The frontend and backend are deployed independently:
