@@ -30,7 +30,7 @@ Controllers -> Services -> Repositories
 - Testable business logic
 
 ### Libraly and Folder structure
-
+```
 [src]
 |- Appointments.Api
 |  |- Controllers
@@ -50,9 +50,11 @@ Controllers -> Services -> Repositories
 |
 |- [Tests]
 |  |- Application.Tests
-
+```
 All libraries must contain Models, Interfaces, Concreate classes for their functionality.
+
 The Interfaces are in a `Abstructions` folder. 
+
 Each Libary is responsible to provide their DI config in a `static IServiceCollection Add...(this IServiceCollection services)` procedure.
 
 
@@ -170,7 +172,7 @@ If this is a pulbic tool, we might want to apply some rate limiting to avoid abu
 ### CI/CD 
 
 ## Deployment
-For this project I wouldn't use containers. I propose to deploy it at Azure App Services.
+For this project I am not using containers. I prefer to deploy it at Azure App Services.
  
 - create a new App Service. Note the [app name] and download the publishing profile of the staging slot.
 - Add the following action at the project's github workflows folder.
@@ -217,6 +219,58 @@ jobs:
           app-name: [app name]
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
+
+
+```
+
+### React app deployment
+
+```
+name: Staging app.appointments.com
+
+on:
+  release:
+    # This specifies that the build will be triggered when we publish a release
+    types: [published]
+
+jobs:
+  build_and_deploy_job:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+
+      - name: Use Node.js 22.13
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.13
+
+      - name: Install dependencies
+        # Skip post-install scripts here, as a malicious script could steal NODE_AUTH_TOKEN.
+        run: "npm ci --ignore-scripts"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_GITHUB_TOKEN }}
+
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_..._CUSTOM_APP_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          action: "upload"
+          ###### Repository/Build Configurations - These values can be configured to match you app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+          app_location: "/" # App source code path
+          api_location: "api" # Api source code path - optional
+          app_build_command: 'npm run build-staging'
+          app_artifact_location: "build/client" # Built app content directory - optional
+          deployment_environment: "staging"
+          ###### End of Repository/Build Configurations ######
 
 
 ```
